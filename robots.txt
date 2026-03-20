@@ -1,43 +1,25 @@
-# robots.txt – OkWin India Affiliate Website
-# https://okwin-india.online/robots.txt
-
 User-agent: *
 Allow: /
-
-# Block any admin or private paths (add as needed)
 Disallow: /admin/
 Disallow: /private/
-Disallow: /*.php$
-
-# Crawl delay (optional – be polite to crawlers)
 Crawl-delay: 5
 
-# Sitemaps
-Sitemap: https://okwin-india.online/sitemap.xml
-
-
-# Google
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 2
 
-# Bing
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 3
 
-# Block bad bots
 User-agent: AhrefsBot
 Disallow: /
-
 User-agent: SemrushBot
 Disallow: /
-
 User-agent: MJ12bot
 Disallow: /
-
 User-agent: DotBot
 Disallow: /
 
-User-agent: BLEXBot
-Disallow: /
+Sitemap: https://okwin-india.com/sitemap.xml
+Sitemap: https://okwin-india.com/sitemap-images.xml
