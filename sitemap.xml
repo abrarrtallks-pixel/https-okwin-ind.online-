@@ -6,43 +6,43 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
   <url>
-    <loc>https://okwin-india.com/index.html</loc>
+    <loc>https://okwin-ind.online/index.html</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-india.com/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-ind.online/index.html"/>
   </url>
 
   <url>
-    <loc>https://okwin-india.com/register.html</loc>
+    <loc>https://okwin-ind.online/register.html</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-india.com/register.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-ind.online/register.html"/>
   </url>
 
   <url>
-    <loc>https://okwin-india.com/login.html</loc>
+    <loc>https://okwin-ind.online/login.html</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-india.com/login.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-ind.online/login.html"/>
   </url>
 
   <url>
-    <loc>https://okwin-india.com/gift-code.html</loc>
+    <loc>https://okwin-ind.online/gift-code.html</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-india.com/gift-code.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-ind.online/gift-code.html"/>
   </url>
 
   <url>
-    <loc>https://okwin-india.com/contact.html</loc>
+    <loc>https://okwin-ind.online/contact.html</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-india.com/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://okwin-ind.online/contact.html"/>
   </url>
 
 </urlset>

@@ -21,5 +21,5 @@ Disallow: /
 User-agent: DotBot
 Disallow: /
 
-Sitemap: https://okwin-india.com/sitemap.xml
-Sitemap: https://okwin-india.com/sitemap-images.xml
+Sitemap: https://okwin-ind.online/sitemap.xml
+Sitemap: https://okwin-ind.online/sitemap-images.xml
