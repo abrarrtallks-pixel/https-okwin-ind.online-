@@ -1,31 +1,36 @@
-/* ===================================================
-   OkWin India – script.js
-   =================================================== */
+/* =====================================================
+   OkWin India — script.js
+   Shared across all 5 pages
+   ===================================================== */
 'use strict';
 
-/* ── Navbar scroll effect & active link ── */
+/* ══════════════════════════════════════════════════
+   1. PAGE LOAD FADE
+══════════════════════════════════════════════════ */
+document.body.style.opacity = '0';
+document.body.style.transition = 'opacity 0.45s ease';
+window.addEventListener('load', () => { document.body.style.opacity = '1'; });
+
+/* ══════════════════════════════════════════════════
+   2. NAVBAR — scroll effect + active link highlight
+══════════════════════════════════════════════════ */
 (function initNavbar() {
-  const navbar = document.getElementById('navbar');
-  const navLinks = document.querySelectorAll('.nav-link');
-  const sections = document.querySelectorAll('section[id]');
+  const nb    = document.querySelector('.navbar');
+  const links = document.querySelectorAll('.nav-a');
+  const secs  = document.querySelectorAll('section[id]');
 
   function onScroll() {
-    // Scrolled class
-    if (window.scrollY > 50) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
-    }
+    if (!nb) return;
+    nb.classList.toggle('scrolled', window.scrollY > 50);
 
-    // Active nav link
-    let current = '';
-    sections.forEach(sec => {
-      const top = sec.offsetTop - 90;
-      if (window.scrollY >= top) current = sec.getAttribute('id');
+    let cur = '';
+    secs.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 90) cur = s.id;
     });
-    navLinks.forEach(link => {
-      link.classList.remove('active');
-      if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+    links.forEach(l => {
+      l.classList.remove('active');
+      const href = l.getAttribute('href') || '';
+      if (cur && href.includes(cur)) l.classList.add('active');
     });
   }
 
@@ -33,132 +38,131 @@
   onScroll();
 })();
 
-/* ── Mobile nav toggle ── */
+/* ══════════════════════════════════════════════════
+   3. MOBILE NAV TOGGLE
+══════════════════════════════════════════════════ */
 (function initMobileNav() {
-  const toggle = document.getElementById('navToggle');
+  const tog  = document.getElementById('navTog');
   const menu = document.getElementById('navMenu');
-  const navLinks = document.querySelectorAll('.nav-link, .nav-cta');
+  if (!tog || !menu) return;
 
-  toggle.addEventListener('click', () => {
+  tog.addEventListener('click', () => {
     const isOpen = menu.classList.toggle('open');
-    toggle.classList.toggle('active', isOpen);
-    toggle.setAttribute('aria-expanded', isOpen);
+    tog.classList.toggle('open', isOpen);
+    tog.setAttribute('aria-expanded', String(isOpen));
     document.body.style.overflow = isOpen ? 'hidden' : '';
   });
 
-  navLinks.forEach(link => {
-    link.addEventListener('click', () => {
+  menu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
       menu.classList.remove('open');
-      toggle.classList.remove('active');
-      toggle.setAttribute('aria-expanded', 'false');
+      tog.classList.remove('open');
+      tog.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
     });
   });
 })();
 
-/* ── Smooth anchor scroll ── */
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
+/* ══════════════════════════════════════════════════
+   4. SMOOTH ANCHOR SCROLL
+══════════════════════════════════════════════════ */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function (e) {
     const target = document.querySelector(this.getAttribute('href'));
     if (target) {
       e.preventDefault();
-      const offset = 70;
-      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      const top = target.getBoundingClientRect().top + window.scrollY - 70;
       window.scrollTo({ top, behavior: 'smooth' });
     }
   });
 });
 
-/* ── Animated counter ── */
+/* ══════════════════════════════════════════════════
+   5. ANIMATED COUNTERS
+══════════════════════════════════════════════════ */
 (function initCounters() {
-  const counters = document.querySelectorAll('.stat-num[data-target]');
+  const counters = document.querySelectorAll('[data-count]');
+  if (!counters.length) return;
   let started = false;
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
-  function animateCounters() {
+  function runCounters() {
     if (started) return;
     started = true;
-    counters.forEach(counter => {
-      const target = parseInt(counter.dataset.target, 10);
-      const duration = 2000;
-      const start = performance.now();
+    counters.forEach(el => {
+      const target   = parseInt(el.dataset.count, 10);
+      const duration = 2200;
+      const t0       = performance.now();
 
-      function update(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const value = Math.floor(easeOut(progress) * target);
-        counter.textContent = value >= 1000
-          ? (value / 1000).toFixed(value >= 100000 ? 0 : 0) + (value >= 100000 ? '' : '')
-          : value;
-        // Format large numbers
-        if (target >= 1000) {
-          const formatted = Math.floor(easeOut(progress) * target);
-          counter.textContent = formatted >= 1000
-            ? Math.floor(formatted / 1000) + 'K'
-            : formatted;
+      function tick(now) {
+        const progress = Math.min((now - t0) / duration, 1);
+        const value    = Math.floor(easeOut(progress) * target);
+        el.textContent = target >= 1000 ? Math.floor(value / 1000) + 'K' : value;
+        if (progress < 1) {
+          requestAnimationFrame(tick);
         } else {
-          counter.textContent = Math.floor(easeOut(progress) * target);
+          el.textContent = target >= 1000 ? Math.floor(target / 1000) + 'K' : target;
         }
-        if (progress < 1) requestAnimationFrame(update);
-        else counter.textContent = target >= 1000 ? Math.floor(target / 1000) + 'K' : target;
       }
-      requestAnimationFrame(update);
+      requestAnimationFrame(tick);
     });
   }
 
-  // Trigger when hero is visible
-  const hero = document.querySelector('.hero-section');
-  if (hero) {
-    const obs = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) { animateCounters(); obs.disconnect(); }
-    }, { threshold: 0.3 });
-    obs.observe(hero);
+  const trigger = document.querySelector('.hero, .page-hero');
+  if (trigger) {
+    new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) runCounters();
+    }, { threshold: 0.3 }).observe(trigger);
+  } else {
+    runCounters();
   }
 })();
 
-/* ── Scroll reveal ── */
+/* ══════════════════════════════════════════════════
+   6. SCROLL REVEAL
+══════════════════════════════════════════════════ */
 (function initReveal() {
-  const targets = document.querySelectorAll(
-    '.feature-card, .step-item, .login-step, .gift-card, .faq-item, .contact-item, .section-header'
+  const els = document.querySelectorAll(
+    '.card, .step, .gift-card, .faq-item, .ci, .sec-hdr, .login-step, .tips-panel, .rev-item'
   );
 
-  targets.forEach(el => el.classList.add('reveal'));
-
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-  targets.forEach(el => obs.observe(el));
-})();
-
-/* ── Stagger reveal on feature cards ── */
-(function staggerCards() {
-  const grids = document.querySelectorAll('.features-grid, .gift-cards-grid');
-  grids.forEach(grid => {
-    const cards = grid.querySelectorAll('.feature-card, .gift-card');
-    cards.forEach((card, i) => {
-      card.style.transitionDelay = (i * 80) + 'ms';
-    });
+  els.forEach((el, i) => {
+    el.classList.add('rev');
+    el.style.transitionDelay = (i % 7) * 70 + 'ms';
   });
+
+  function check() {
+    document.querySelectorAll('.rev').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight - 40) el.classList.add('vis');
+    });
+  }
+
+  new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' }).observe(document.body);
+
+  window.addEventListener('scroll', check, { passive: true });
+  check();
 })();
 
-/* ── FAQ accordion ── */
+/* ══════════════════════════════════════════════════
+   7. FAQ ACCORDION
+══════════════════════════════════════════════════ */
 (function initFAQ() {
-  document.querySelectorAll('.faq-question').forEach(btn => {
+  const questions = document.querySelectorAll('.faq-q');
+  if (!questions.length) return;
+
+  questions.forEach(btn => {
     btn.addEventListener('click', () => {
       const isOpen = btn.getAttribute('aria-expanded') === 'true';
       // Close all
-      document.querySelectorAll('.faq-question').forEach(b => {
+      questions.forEach(b => {
         b.setAttribute('aria-expanded', 'false');
         b.nextElementSibling.classList.remove('open');
       });
-      // Toggle current
+      // Open clicked (if it was closed)
       if (!isOpen) {
         btn.setAttribute('aria-expanded', 'true');
         btn.nextElementSibling.classList.add('open');
@@ -167,93 +171,97 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 
   // Open first by default
-  const first = document.querySelector('.faq-question');
-  if (first) {
-    first.setAttribute('aria-expanded', 'true');
-    first.nextElementSibling.classList.add('open');
+  if (questions[0]) {
+    questions[0].setAttribute('aria-expanded', 'true');
+    questions[0].nextElementSibling.classList.add('open');
   }
 })();
 
-/* ── Copy invitation code ── */
-(function initCopyCode() {
-  const btn = document.getElementById('copyCode');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const code = '6682815057352';
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(() => {
-        btn.classList.add('copied');
-        btn.textContent = '✅ Copied: ' + code;
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.textContent = '📋 Copy Code: ' + code;
-        }, 2500);
-      }).catch(() => fallbackCopy(code, btn));
-    } else {
-      fallbackCopy(code, btn);
-    }
-  });
+/* ══════════════════════════════════════════════════
+   8. COPY INVITATION CODE
+══════════════════════════════════════════════════ */
+(function initCopyBtns() {
+  const CODE = '6682815057352';
 
-  function fallbackCopy(text, btn) {
+  function copySuccess(btn, original) {
+    btn.classList.add('copied');
+    btn.textContent = '✅ Copied: ' + CODE;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = original;
+    }, 2600);
+  }
+
+  function fallbackCopy(text, btn, original) {
     const ta = document.createElement('textarea');
     ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
     document.body.appendChild(ta);
     ta.select();
     try {
       document.execCommand('copy');
-      btn.classList.add('copied');
-      btn.textContent = '✅ Copied: ' + text;
-      setTimeout(() => {
-        btn.classList.remove('copied');
-        btn.textContent = '📋 Copy Code: ' + text;
-      }, 2500);
+      copySuccess(btn, original);
     } catch (err) {
-      btn.textContent = '⚠️ Copy manually: ' + text;
+      btn.textContent = '⚠️ Copy: ' + text;
     }
     document.body.removeChild(ta);
   }
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    const original = btn.textContent;
+    btn.addEventListener('click', () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(CODE)
+          .then(() => copySuccess(btn, original))
+          .catch(() => fallbackCopy(CODE, btn, original));
+      } else {
+        fallbackCopy(CODE, btn, original);
+      }
+    });
+  });
 })();
 
-/* ── Contact form ── */
+/* ══════════════════════════════════════════════════
+   9. CONTACT FORM
+══════════════════════════════════════════════════ */
 (function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
 
-  const nameInput = document.getElementById('contactName');
-  const emailInput = document.getElementById('contactEmail');
-  const msgInput = document.getElementById('contactMessage');
-  const submitBtn = document.getElementById('submitBtn');
-  const successDiv = document.getElementById('formSuccess');
+  const nm = document.getElementById('cName');
+  const em = document.getElementById('cEmail');
+  const ms = document.getElementById('cMsg');
+  const sb = document.getElementById('cSubmit');
+  const ok = document.getElementById('cOk');
 
-  function setError(id, msg) {
+  function setErr(id, msg) {
     const el = document.getElementById(id);
     if (el) el.textContent = msg;
   }
+
   function clearErrors() {
-    ['nameError', 'emailError', 'msgError'].forEach(id => setError(id, ''));
+    ['eN', 'eE', 'eM'].forEach(id => setErr(id, ''));
   }
 
   function validate() {
     clearErrors();
     let valid = true;
 
-    if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
-      setError('nameError', 'Please enter your name (at least 2 characters).');
+    if (!nm || !nm.value.trim() || nm.value.trim().length < 2) {
+      setErr('eN', 'Please enter your full name (min 2 characters).');
       valid = false;
     }
 
-    const emailVal = emailInput.value.trim();
-    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-    const isMobile = /^[0-9]{10}$/.test(emailVal);
-    if (!emailVal || (!isEmail && !isMobile)) {
-      setError('emailError', 'Please enter a valid email address or 10-digit mobile number.');
+    const ev = em ? em.value.trim() : '';
+    const isEmail  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev);
+    const isMobile = /^[6-9][0-9]{9}$/.test(ev);
+    if (!ev || (!isEmail && !isMobile)) {
+      setErr('eE', 'Enter a valid email address or 10-digit Indian mobile number.');
       valid = false;
     }
 
-    if (!msgInput.value.trim() || msgInput.value.trim().length < 10) {
-      setError('msgError', 'Please enter your message (at least 10 characters).');
+    if (!ms || !ms.value.trim() || ms.value.trim().length < 10) {
+      setErr('eM', 'Please enter a message (min 10 characters).');
       valid = false;
     }
 
@@ -264,116 +272,249 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     if (!validate()) return;
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending… ⏳';
+    sb.disabled = true;
+    sb.textContent = 'Sending… ⏳';
 
-    // Simulate form submission (replace with real backend / EmailJS etc.)
+    // Simulate async send — replace with EmailJS / Formspree / backend
     setTimeout(() => {
       form.reset();
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Send Message ✈️';
-      successDiv.classList.add('show');
-      successDiv.textContent = '✅ Message sent successfully! We will reply within 24 hours via email or Telegram.';
-      setTimeout(() => {
-        successDiv.classList.remove('show');
-      }, 6000);
-    }, 1600);
+      sb.disabled = false;
+      sb.textContent = 'Send Message ✈️';
+      if (ok) {
+        ok.classList.add('show');
+        ok.textContent = '✅ Message sent successfully! We will reply within 24 hours via email or Telegram.';
+        setTimeout(() => ok.classList.remove('show'), 7000);
+      }
+    }, 1800);
   });
 
-  // Live validation on blur
-  [nameInput, emailInput, msgInput].forEach(input => {
-    input.addEventListener('blur', validate);
+  [nm, em, ms].forEach(input => {
+    if (input) input.addEventListener('blur', validate);
   });
 })();
 
-/* ── Floating CTA ── */
-(function initFloatingCta() {
-  const cta = document.getElementById('floatingCta');
-  if (!cta) return;
-  let lastScroll = 0;
+/* ══════════════════════════════════════════════════
+   10. FLOATING CTA
+══════════════════════════════════════════════════ */
+(function initFloatingCTA() {
+  const fc = document.getElementById('floatCta');
+  if (!fc) return;
 
   window.addEventListener('scroll', () => {
+    const hero   = document.querySelector('.hero, .page-hero');
+    const heroH  = hero ? hero.offsetHeight : 500;
+    const docH   = document.documentElement.scrollHeight - window.innerHeight;
     const scrollY = window.scrollY;
-    const heroHeight = document.querySelector('.hero-section')?.offsetHeight || 600;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
 
-    const pastHero = scrollY > heroHeight * 0.7;
-    const nearBottom = scrollY > docHeight - 400;
-
-    if (pastHero && !nearBottom) {
-      cta.classList.add('show');
+    if (scrollY > heroH * 0.6 && scrollY < docH - 320) {
+      fc.classList.add('show');
     } else {
-      cta.classList.remove('show');
+      fc.classList.remove('show');
     }
-    lastScroll = scrollY;
   }, { passive: true });
 })();
 
-/* ── Legal Modals ── */
-(function initModals() {
-  const overlay = document.getElementById('modalOverlay');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalContent = document.getElementById('modalContent');
-  const closeBtn = document.getElementById('modalClose');
+/* ══════════════════════════════════════════════════
+   11. RESPONSIVE BONUS FLOW ARROWS
+══════════════════════════════════════════════════ */
+function fixArrows() {
+  document.querySelectorAll('.barr').forEach(el => {
+    el.style.transform = window.innerWidth >= 640 ? 'none' : 'rotate(90deg)';
+  });
+}
+fixArrows();
+window.addEventListener('resize', fixArrows);
+
+/* ══════════════════════════════════════════════════
+   12. UTM TAGGING ON REFERRAL LINKS
+══════════════════════════════════════════════════ */
+document.querySelectorAll('a[href*="77okwin.com"]').forEach(a => {
+  try {
+    const u = new URL(a.href);
+    if (!u.searchParams.has('utm_source')) {
+      u.searchParams.set('utm_source', 'okwin-ind-online');
+      u.searchParams.set('utm_medium', 'affiliate');
+      u.searchParams.set('utm_campaign', 'referral');
+      a.href = u.toString();
+    }
+  } catch (e) { /* ignore */ }
+});
+
+/* ══════════════════════════════════════════════════
+   13. LEGAL MODALS
+       Privacy Policy · Terms of Use · Disclaimer
+══════════════════════════════════════════════════ */
+(function initLegalModals() {
+
+  const overlay = document.getElementById('modalOv');
   if (!overlay) return;
 
-  const content = {
+  const mTitle  = document.getElementById('mTitle');
+  const mBody   = document.getElementById('mBody');
+  const mClose  = document.getElementById('mX');
+
+  /* ── LEGAL CONTENT ── */
+  const LEGAL = {
+
+    /* ════════════════════════════════════════
+       PRIVACY POLICY
+    ════════════════════════════════════════ */
     privacy: {
-      title: 'Privacy Policy',
+      title: '🔒 Privacy Policy',
       html: `
-        <p>This website ("OkWin India Affiliate") is an independent affiliate promotional website. We respect your privacy and are committed to protecting your personal data.</p>
-        <h3>Information We Collect</h3>
-        <p>We may collect your name, email address, and mobile number when you submit our contact form. We do not collect payment information.</p>
-        <h3>How We Use Your Information</h3>
-        <p>Your contact information is used solely to respond to your enquiries about OkWin registration, login, or bonus queries. We do not sell your data to third parties.</p>
-        <h3>Cookies</h3>
-        <p>This site may use basic cookies for analytics and performance purposes only. No personal data is stored in cookies.</p>
-        <h3>Third-Party Links</h3>
-        <p>This site contains affiliate links to the OkWin platform (77okwin.com). We are not responsible for the privacy practices of the OkWin platform. Please review their privacy policy separately.</p>
-        <h3>Contact</h3>
-        <p>For privacy enquiries, email: sreenchees@gmail.com</p>
+        <p><strong>Effective Date:</strong> 1 January 2025 &nbsp;|&nbsp; <strong>Last Updated:</strong> 1 January 2025</p>
+        <p>This Privacy Policy explains how <strong>OkWin India</strong> ("we", "us", "our") collects, uses, stores, and protects the personal information of visitors to <strong>okwin-ind.online</strong> ("the Website"). By using this Website you agree to the practices described in this policy.</p>
+
+        <h3>1. Who We Are</h3>
+        <p>OkWin India is an independent affiliate and referral promotional website. We are NOT the official OkWin / 77okwin.com platform. We promote OkWin Game to new players in India and earn referral commissions when players register using our invitation links.</p>
+
+        <h3>2. Information We Collect</h3>
+        <p>We collect only the minimum information necessary to operate this website:</p>
+        <p><strong>a) Contact Form Data</strong> — When you submit our contact form, we collect your name, email address or mobile number, and your message. This information is used solely to respond to your query.</p>
+        <p><strong>b) Analytics Data</strong> — We may use anonymous analytics tools (such as Google Analytics) to understand how visitors use the Website. This includes pages visited, time on site, and device type. No personally identifiable information is collected via analytics.</p>
+        <p><strong>c) Cookies</strong> — The Website may use basic cookies for session management and analytics purposes. We do not use cookies to track personal identity. You can disable cookies in your browser settings without affecting access to this Website.</p>
+        <p>We do <strong>NOT</strong> collect: credit card numbers, bank account details, Aadhaar numbers, PAN numbers, OkWin passwords, or any sensitive financial data.</p>
+
+        <h3>3. How We Use Your Information</h3>
+        <p>Your contact form information is used only to reply to your specific enquiry about OkWin registration, login, bonuses, or withdrawals. We do not use your information for marketing without consent. We do not sell, rent, or share your personal data with any third party for commercial purposes.</p>
+
+        <h3>4. Data Retention</h3>
+        <p>Contact form submissions are retained for a maximum of 90 days to allow follow-up on support queries and are then permanently deleted. Analytics data is retained in anonymised aggregate form only.</p>
+
+        <h3>5. Third-Party Links & Services</h3>
+        <p>This Website contains affiliate links to <strong>77okwin.com</strong>. When you click these links and visit OkWin, you are subject to OkWin's own Privacy Policy and Terms of Service. We are not responsible for OkWin's data practices. We recommend reviewing their privacy policy before registering.</p>
+        <p>We may also link to Telegram (@Willian2500). Telegram's own privacy policy governs any data you share on their platform.</p>
+
+        <h3>6. Data Security</h3>
+        <p>We take reasonable technical and organisational measures to protect any information submitted through our contact form. However, no method of transmission over the internet is 100% secure. We cannot guarantee the absolute security of data transmitted to or from the Website.</p>
+
+        <h3>7. Children's Privacy</h3>
+        <p>This Website is strictly for adults aged <strong>18 years and above</strong>. We do not knowingly collect personal information from anyone under 18 years of age. If you believe a minor has submitted data through this Website, please contact us immediately for deletion.</p>
+
+        <h3>8. Your Rights</h3>
+        <p>Under applicable Indian data protection laws, you have the right to: request access to personal data we hold about you, request correction of inaccurate data, request deletion of your data, and withdraw consent for data processing at any time. To exercise any of these rights, contact us at <strong>sreenchees@gmail.com</strong>.</p>
+
+        <h3>9. Changes to This Policy</h3>
+        <p>We may update this Privacy Policy from time to time. The "Last Updated" date at the top of this page reflects the most recent revision. Continued use of the Website after changes constitutes acceptance of the revised policy.</p>
+
+        <h3>10. Contact</h3>
+        <p>For any privacy-related questions or requests, please contact:</p>
+        <p>📧 Email: <strong>sreenchees@gmail.com</strong><br/>💬 Telegram: <strong>@Willian2500</strong><br/>🌐 Website: <strong>okwin-ind.online</strong></p>
       `
     },
+
+    /* ════════════════════════════════════════
+       TERMS OF USE
+    ════════════════════════════════════════ */
     terms: {
-      title: 'Terms of Use',
+      title: '📋 Terms of Use',
       html: `
-        <p>By accessing this website, you agree to the following terms and conditions.</p>
-        <h3>Affiliate Disclosure</h3>
-        <p>This is an independent affiliate promotional website for Ok Win Game. We earn a commission when new players register using our invitation link. All content is for informational and promotional purposes only.</p>
-        <h3>Age Restriction</h3>
-        <p>You must be 18 years or older to use OkWin or visit this promotional website. By using this site, you confirm you are of legal age.</p>
-        <h3>Accuracy of Information</h3>
-        <p>We strive to keep information about OkWin bonuses and registration accurate. However, terms and bonus amounts may change on the OkWin platform. Always verify the latest offers on the official OkWin website.</p>
-        <h3>Responsible Gaming</h3>
-        <p>Online gaming involves financial risk. Never gamble more than you can afford to lose. If you feel you have a gaming problem, seek professional help.</p>
-        <h3>Jurisdiction</h3>
-        <p>Online gaming laws vary. It is your responsibility to verify whether online gaming is legal in your state or region within India.</p>
+        <p><strong>Effective Date:</strong> 1 January 2025 &nbsp;|&nbsp; <strong>Last Updated:</strong> 1 January 2025</p>
+        <p>Please read these Terms of Use ("Terms") carefully before using the website <strong>okwin-ind.online</strong> operated by <strong>OkWin India</strong> ("we", "us", "our"). By accessing or using this Website, you agree to be bound by these Terms in full.</p>
+
+        <h3>1. Nature of This Website</h3>
+        <p>OkWin India is an <strong>independent affiliate and referral promotional website</strong>. We are not affiliated with, endorsed by, or officially connected to OkWin, 77okwin.com, or any of their operators, owners, or parent companies. All content on this Website is created independently for informational and promotional purposes only.</p>
+        <p>This Website exists solely to guide new players in India through the OkWin registration and login process and to promote OkWin's welcome bonus offers via our referral/invitation link.</p>
+
+        <h3>2. Affiliate Disclosure</h3>
+        <p>We earn a referral commission when new players register on OkWin using our invitation link (Code: 6682815057352). This commission is paid by the OkWin platform and does not increase the cost to you in any way. All opinions and guidance on this Website are our own and are not influenced by commission payments.</p>
+
+        <h3>3. Eligibility & Age Restriction</h3>
+        <p>You must be <strong>18 years of age or older</strong> to access this Website or to use the OkWin platform. By accessing this Website, you confirm that you are at least 18 years old. We reserve the right to terminate access for anyone we reasonably believe to be underage.</p>
+        <p>It is your responsibility to verify whether online gaming and color prediction activities are legal in your state, district, or region within India. We do not accept responsibility for users accessing OkWin from jurisdictions where such activities are prohibited.</p>
+
+        <h3>4. Accuracy of Information</h3>
+        <p>We make every effort to ensure that the information on this Website — including registration steps, login guides, and bonus amounts — is accurate and up to date. However, OkWin's platform terms, bonus amounts, and features may change at any time without notice. We cannot guarantee that all information reflects the current state of the OkWin platform.</p>
+        <p>Always verify the latest bonus terms, wagering requirements, and withdrawal conditions directly on the official OkWin website at <strong>77okwin.com</strong>.</p>
+
+        <h3>5. Prohibited Uses</h3>
+        <p>You agree NOT to use this Website to: violate any applicable law or regulation; impersonate any person or entity; transmit harmful, offensive, or misleading content; attempt to gain unauthorised access to any systems; scrape or copy content for commercial use without permission; or engage in any activity that disrupts or damages the Website.</p>
+
+        <h3>6. Intellectual Property</h3>
+        <p>All original content on this Website — including text, guides, layout, and design — is the intellectual property of OkWin India. You may not reproduce, distribute, or commercially exploit any content without prior written permission. OkWin trademarks, logos, and brand names belong to their respective owners and are referenced here only for informational purposes.</p>
+
+        <h3>7. Responsible Gaming</h3>
+        <p>Online gaming and color prediction involve real financial risk. We strongly encourage responsible gaming. <strong>Never gamble more than you can afford to lose.</strong> Set daily, weekly, and monthly deposit limits. If gaming is affecting your financial wellbeing, relationships, or mental health, please seek professional help immediately.</p>
+        <p>If you or someone you know has a gambling problem, contact a certified addiction counsellor or helpline in your area.</p>
+
+        <h3>8. Limitation of Liability</h3>
+        <p>To the fullest extent permitted by law, OkWin India shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from: your use of this Website; your use of the OkWin platform; financial losses on OkWin; reliance on information provided on this Website; or any technical errors or downtime on this Website.</p>
+        <p>This Website is provided on an "as is" and "as available" basis without any warranty of any kind.</p>
+
+        <h3>9. Links to Third-Party Websites</h3>
+        <p>This Website contains links to 77okwin.com and other third-party sites. These links are provided for convenience only. We have no control over the content or practices of third-party websites and accept no responsibility for them. Accessing third-party sites is at your own risk.</p>
+
+        <h3>10. Changes to Terms</h3>
+        <p>We reserve the right to modify these Terms at any time. Changes will be indicated by an updated "Last Updated" date. Continued use of the Website after changes are posted constitutes your acceptance of the revised Terms.</p>
+
+        <h3>11. Governing Law</h3>
+        <p>These Terms are governed by and construed in accordance with the laws of India. Any disputes arising under these Terms shall be subject to the jurisdiction of Indian courts.</p>
+
+        <h3>12. Contact</h3>
+        <p>For questions about these Terms, please contact:</p>
+        <p>📧 Email: <strong>sreenchees@gmail.com</strong><br/>💬 Telegram: <strong>@Willian2500</strong></p>
       `
     },
+
+    /* ════════════════════════════════════════
+       DISCLAIMER
+    ════════════════════════════════════════ */
     disclaimer: {
-      title: 'Disclaimer',
+      title: '⚠️ Disclaimer',
       html: `
-        <p><strong>Affiliate / Referral Promotion Website Disclaimer</strong></p>
-        <p>OkWin India (this website) is an independent affiliate website and is NOT the official OkWin platform. We are not affiliated with, endorsed by, or officially connected to OkWin or its operators.</p>
-        <h3>Financial Risk Warning</h3>
-        <p>Online gaming and color prediction games involve real financial risk. Past results do not guarantee future winnings. You may lose the money you deposit. Only play with money you can afford to lose.</p>
-        <h3>No Guarantees</h3>
-        <p>We do not guarantee winnings on OkWin. The ₹300 welcome bonus is subject to OkWin's terms and conditions which may change at any time.</p>
-        <h3>18+ Only</h3>
-        <p>This website and the OkWin platform are strictly for adults aged 18 and above. We do not target minors.</p>
-        <h3>Responsible Gaming</h3>
-        <p>If you or someone you know has a gambling problem, please seek help from a qualified professional or call the National Problem Gambling Helpline.</p>
+        <p><strong>Effective Date:</strong> 1 January 2025 &nbsp;|&nbsp; <strong>Last Updated:</strong> 1 January 2025</p>
+
+        <h3>1. Independent Affiliate Website</h3>
+        <p><strong>OkWin India (okwin-ind.online) is an independent affiliate and referral promotional website. We are NOT the official OkWin platform, NOT 77okwin.com, and NOT affiliated with or endorsed by OkWin's operators, owners, or partners in any official capacity.</strong></p>
+        <p>The OkWin name, logo, and related trademarks are the property of their respective owners. We reference them here solely for informational and promotional purposes as permitted under affiliate marketing practices.</p>
+
+        <h3>2. Financial Risk Warning</h3>
+        <p>Online gaming, color prediction, and all related activities featured on the OkWin platform involve <strong>real financial risk</strong>. You may lose part or all of the money you deposit on OkWin. Past performance of color prediction results does not indicate or guarantee future outcomes.</p>
+        <p>Do not deposit money on OkWin that you cannot afford to lose. Do not borrow money to fund online gaming. Do not chase losses by making larger bets. Financial decisions made on the OkWin platform are entirely your own responsibility.</p>
+
+        <h3>3. No Guarantee of Winnings</h3>
+        <p>Nothing on this Website constitutes a guarantee, promise, or representation that you will win money on OkWin. The ₹300 welcome bonus and all other bonuses described on this Website are promotional offers subject to OkWin's own terms and conditions, which may change at any time. We do not guarantee the availability, value, or terms of any bonus at any given time.</p>
+
+        <h3>4. Information Accuracy</h3>
+        <p>While we strive to keep all registration guides, login instructions, and bonus information accurate and up to date, we cannot guarantee that all content reflects the current state of the OkWin platform. OkWin may update their platform, change their registration process, modify bonus amounts, or alter withdrawal rules without notice.</p>
+        <p>Always verify critical information directly on <strong>77okwin.com</strong> before making financial decisions.</p>
+
+        <h3>5. Legal Compliance — Your Responsibility</h3>
+        <p>Online gaming laws vary significantly across different states and regions in India. It is <strong>entirely your responsibility</strong> to determine whether accessing and using OkWin is legal in your state, district, or region. We do not provide legal advice. We are not responsible for any legal consequences arising from your use of the OkWin platform in jurisdictions where it may be restricted or prohibited.</p>
+        <p>States where online gaming of skill and/or chance may be restricted include Andhra Pradesh, Telangana, Odisha, Assam, Nagaland, Sikkim, and others. Please verify local laws before participating.</p>
+
+        <h3>6. Age Disclaimer</h3>
+        <p>This Website and the OkWin platform are strictly for individuals <strong>18 years of age and above</strong>. If you are under 18, you must not access this Website or register on OkWin. We do not knowingly promote gambling services to minors.</p>
+
+        <h3>7. Responsible Gaming Statement</h3>
+        <p>We are committed to promoting responsible gaming. If you feel that gaming is negatively impacting your life — including your finances, relationships, work, or mental health — please stop playing immediately and seek help.</p>
+        <p>Resources for problem gambling support in India include certified addiction counsellors, psychiatric consultation, and iCall (a psychological helpline by TISS): <strong>9152987821</strong>.</p>
+
+        <h3>8. Affiliate Commission Disclosure</h3>
+        <p>This Website earns referral commissions from the OkWin platform when new users register using our invitation link or code (<strong>6682815057352</strong>). This affiliate relationship does not influence the accuracy of our guides or the quality of our support. Commission is earned from the platform operator, not from users.</p>
+
+        <h3>9. Technical Disclaimer</h3>
+        <p>We are not responsible for any technical issues, downtime, payment failures, account suspensions, or data losses that occur on the OkWin platform. For platform-level technical support, contact OkWin directly through their official channels at 77okwin.com.</p>
+
+        <h3>10. Contact Us</h3>
+        <p>If you have any questions about this Disclaimer or wish to report an issue:</p>
+        <p>📧 Email: <strong>sreenchees@gmail.com</strong><br/>💬 Telegram: <strong>@Willian2500</strong><br/>🌐 Website: <strong>okwin-ind.online</strong></p>
       `
     }
-  };
 
-  function openModal(type) {
-    if (!content[type]) return;
-    modalTitle.textContent = content[type].title;
-    modalContent.innerHTML = content[type].html;
+  }; // end LEGAL
+
+  /* ── Modal open/close functions ── */
+  function openModal(key) {
+    if (!LEGAL[key] || !mTitle || !mBody) return;
+    mTitle.textContent = LEGAL[key].title;
+    mBody.innerHTML    = LEGAL[key].html;
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    // Scroll modal content to top
+    const box = overlay.querySelector('.modal-box');
+    if (box) box.scrollTop = 0;
   }
 
   function closeModal() {
@@ -382,62 +523,25 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     document.body.style.overflow = '';
   }
 
-  document.getElementById('privacyLink')?.addEventListener('click', e => { e.preventDefault(); openModal('privacy'); });
-  document.getElementById('termsLink')?.addEventListener('click', e => { e.preventDefault(); openModal('terms'); });
-  document.getElementById('disclaimerLink')?.addEventListener('click', e => { e.preventDefault(); openModal('disclaimer'); });
-
-  closeBtn?.addEventListener('click', closeModal);
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-})();
-
-/* ── Lazy load images (if any added later) ── */
-(function initLazyImages() {
-  const images = document.querySelectorAll('img[data-src]');
-  if (!images.length) return;
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-        obs.unobserve(img);
-      }
+  /* ── Bind triggers ── */
+  document.querySelectorAll('[data-modal]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      openModal(el.dataset.modal);
     });
   });
-  images.forEach(img => obs.observe(img));
-})();
 
-/* ── Bonus flow arrow direction (responsive) ── */
-(function fixBflowArrows() {
-  function update() {
-    document.querySelectorAll('.bflow-arrow').forEach(el => {
-      el.style.transform = window.innerWidth >= 640 ? 'none' : 'rotate(90deg)';
-    });
-  }
-  update();
-  window.addEventListener('resize', update);
-})();
+  /* ── Close button ── */
+  if (mClose) mClose.addEventListener('click', closeModal);
 
-/* ── Add UTM params to all referral links (optional tracking) ── */
-(function tagLinks() {
-  document.querySelectorAll('a[href*="77okwin.com"]').forEach(link => {
-    try {
-      const url = new URL(link.href);
-      if (!url.searchParams.has('utm_source')) {
-        url.searchParams.set('utm_source', 'okwin-india-affiliate');
-        url.searchParams.set('utm_medium', 'referral');
-        link.href = url.toString();
-      }
-    } catch (e) { /* ignore */ }
+  /* ── Click outside to close ── */
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal();
   });
-})();
 
-/* ── Page load animation ── */
-(function initPageLoad() {
-  document.body.style.opacity = '0';
-  document.body.style.transition = 'opacity 0.4s ease';
-  window.addEventListener('load', () => {
-    document.body.style.opacity = '1';
+  /* ── Escape key to close ── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
   });
-})();
+
+})(); // end initLegalModals
